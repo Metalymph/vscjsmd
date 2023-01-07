@@ -1,2 +1,2 @@
 # vscjsmd
-A simple parser to from VSCode Json Snippets to Markdown table
+A simple parser from VSCode Snippets to Markdown table for single count prefix

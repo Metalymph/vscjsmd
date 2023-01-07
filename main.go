@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -26,8 +27,7 @@ func snippetsParsing(buffer []byte) ([]TableItem, error) {
 			case "prefix", "description":
 				parsedVal, ok := v.(string)
 				if !ok {
-					fmt.Fprintf(os.Stderr, "Prefix `%v` is not a valid string", v)
-					os.Exit(5)
+					return nil, fmt.Errorf("prefix `%v` is not a valid string", v)
 				}
 				if k == "prefix" {
 					item.prefix = parsedVal
@@ -36,8 +36,7 @@ func snippetsParsing(buffer []byte) ([]TableItem, error) {
 				}
 			case "body": continue
 			default:
-				fmt.Fprintf(os.Stderr, "`%s` is not a valid parameter for snippet", k)
-				os.Exit(6)
+				return nil, fmt.Errorf("`%s` is not a valid parameter for snippet", k)
 			}
 		}
 		prefixDesc = append(prefixDesc, item)
@@ -64,7 +63,7 @@ func buildMDTable(prefixDesc []TableItem) (mdTable string, err error) {
 }
 
 func writeMDFile(mdTable string) (err error) {
-	fd, err := os.OpenFile("snippets_table.md", os.O_WRONLY, 0666)
+	fd, err := os.OpenFile("snippets_table.md", os.O_CREATE | os.O_WRONLY, 0666)
 	if err != nil {
 		return err
 	}
@@ -103,6 +102,10 @@ func main()  {
 
 	prefixDesc, err := snippetsParsing(buffer)
 	checkError(err)
+
+	sort.SliceStable(prefixDesc, func(i, j int) bool {
+		return prefixDesc[i].prefix < prefixDesc[j].prefix
+	})
 
 	markdownTable, err := buildMDTable(prefixDesc)
 	checkError(err)
