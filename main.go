@@ -13,6 +13,7 @@ type TableItem struct {
 	description string
 }
 
+//snippetsParsing parses the buffer from read file and returns a slice of (prefix, description)
 func snippetsParsing(buffer []byte) ([]TableItem, error) {
 	var decSnippets map[string]map[string]interface{}
 	if err := json.Unmarshal(buffer, &decSnippets); err != nil {
@@ -45,6 +46,7 @@ func snippetsParsing(buffer []byte) ([]TableItem, error) {
 	return prefixDesc, nil
 }
 
+//buildMDTable format the full snippets info table into a string
 func buildMDTable(prefixDesc []TableItem) (mdTable string, err error) {
 	var sb strings.Builder
 	_, err = sb.WriteString("| prefix | description |\n| :----- | :---------- |\n")
@@ -62,6 +64,7 @@ func buildMDTable(prefixDesc []TableItem) (mdTable string, err error) {
 	return sb.String(), nil
 }
 
+//writeMDFile creates and writes the full Markdown table in a temporary file
 func writeMDFile(mdTable string) (err error) {
 	fd, err := os.OpenFile("snippets_table.md", os.O_CREATE | os.O_WRONLY, 0666)
 	if err != nil {
@@ -78,6 +81,7 @@ func writeMDFile(mdTable string) (err error) {
 	return nil
 }
 
+//checkError reduces verbosity for error checking
 func checkError(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -92,7 +96,7 @@ func main()  {
 		os.Exit(1)
 	}
 	
-	if !strings.HasSuffix(os.Args[1], ".code-snippets") && !strings.HasSuffix(os.Args[1], ".json") {
+	if !strings.HasSuffix(os.Args[1], ".code-snippets") {
 		fmt.Fprintf(os.Stderr, "Wrong file extension: Given `%s`. Accepted: `code-snippets`\n", os.Args[1])
 		os.Exit(1)
 	}
@@ -103,6 +107,7 @@ func main()  {
 	prefixDesc, err := snippetsParsing(buffer)
 	checkError(err)
 
+	//sorting by asc. prefix name
 	sort.SliceStable(prefixDesc, func(i, j int) bool {
 		return prefixDesc[i].prefix < prefixDesc[j].prefix
 	})
