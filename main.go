@@ -43,6 +43,11 @@ func snippetsParsing(buffer []byte) ([]TableItem, error) {
 		prefixDesc = append(prefixDesc, item)
 	}
 	
+	//sorting by asc. prefix name
+	sort.SliceStable(prefixDesc, func(i, j int) bool {
+		return prefixDesc[i].prefix < prefixDesc[j].prefix
+	})
+
 	return prefixDesc, nil
 }
 
@@ -106,11 +111,6 @@ func main()  {
 
 	prefixDesc, err := snippetsParsing(buffer)
 	checkError(err)
-
-	//sorting by asc. prefix name
-	sort.SliceStable(prefixDesc, func(i, j int) bool {
-		return prefixDesc[i].prefix < prefixDesc[j].prefix
-	})
 
 	markdownTable, err := buildMDTable(prefixDesc)
 	checkError(err)
